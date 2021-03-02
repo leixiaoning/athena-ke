@@ -1,0 +1,63 @@
+{
+  "batch_size":8,
+  "num_epochs":1000,
+  "sorta_epoch":1,
+  "ckpt":"examples/asr/iot/ckpts/im5100h_aug_deep_speech_fbank80_pitch3_2conv_64_4_5gru512",
+  "summary_dir":"examples/asr/iot/ckpts/im5100h_aug_deep_speech_fbank80_pitch3_2conv_64_4_5gru512/event/",
+  "solver_gpu":[],
+  "solver_type": "asr_ctc",
+  "solver_config":{
+    "solver_type":"asr_ctc",
+    "clip_norm":100.0,
+    "log_interval":10
+  },
+
+  "model":"deep_speech_conv4",
+  "num_classes": null,
+  "pretrained_model": null,
+  "model_config":{
+    "conv_filters":64,
+    "rnn_hidden_size":512,
+    "rnn_type":"cudnngru",
+    "num_rnn_layers":5
+  },
+
+  "optimizer":"warmup_adam",
+  "optimizer_config":{
+    "d_model":512,
+    "warmup_steps":10000,
+    "k":1
+  },
+
+  "dataset_builder": "speech_recognition_dataset_kaldiio",
+  "num_data_threads": 1,
+  "trainset_config":{
+    "data_scps_dir": "examples/asr/iot/data/dev_gpu/",
+    "audio_config":{"type":"Fbank", "filterbank_channel_count":83},
+    "cmvn_file":"examples/asr/iot/data/global.cmvn",
+    "text_config": {"type":"vocab", "model":"examples/asr/iot/data/vocab/syllable_1499.vocab"},
+    "input_length_range":[10, 8000]
+  },
+  "devset_config":{
+    "data_scps_dir": "examples/asr/iot/data/dev_gpu/",
+    "audio_config":{"type":"Fbank", "filterbank_channel_count":83},
+    "cmvn_file":"examples/asr/iot/data/global.cmvn",
+    "text_config": {"type":"vocab", "model":"examples/asr/iot/data/vocab/syllable_1499.vocab"},
+    "input_length_range":[10, 8000]
+  },
+  "testset_config":{
+    "data_scps_dir": "examples/asr/iot/data/dev_gpu/",
+    "audio_config":{"type":"Fbank", "filterbank_channel_count":83},
+    "cmvn_file":"examples/asr/iot/data/global.cmvn",
+    "text_config": {"type":"vocab", "model":"examples/asr/iot/data/vocab/syllable_1499.vocab"}
+  },
+  "inference_config":{
+     "decoder_type":"asr_ctc",
+     "beam_size":10,
+     "model_avg_num": 10,
+     "ctc_weight":0,
+     "lm_type":"",
+     "lm_weight":0.3,
+     "lm_path":"examples/asr/hkust/data/5gram.arpa"
+   }
+}
