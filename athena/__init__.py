@@ -56,6 +56,7 @@ from .models.fastspeech import FastSpeech
 from .models.masked_pc import MaskedPredictCoding
 from .models.deep_speech import DeepSpeechModel
 from .models.deep_speech_ce import DeepSpeechModelCE
+from .models.deep_speech_ce_pb_0 import DeepSpeechModelCE4PB
 from .models.deep_speech_conv4 import DeepSpeechModelConv4
 from .models.deep_speech_conv4_pb import DeepSpeechModelConv4PB
 from .models.mtl_seq2seq import MtlTransformerCtc

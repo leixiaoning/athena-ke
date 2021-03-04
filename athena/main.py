@@ -38,6 +38,7 @@ SUPPORTED_DATASET_BUILDER = {
 SUPPORTED_MODEL = {
     "deep_speech": DeepSpeechModel,
     "deep_speech_ce": DeepSpeechModelCE,
+    "deep_speech_ce_pb": DeepSpeechModelCE4PB,
     "deep_speech_conv4": DeepSpeechModelConv4,
     "speech_transformer": SpeechTransformer,
     "speech_transformer2": SpeechTransformer2,

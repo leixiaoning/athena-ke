@@ -26,7 +26,7 @@ from ..metrics import FrameAccuracy
 from ..layers.commons import SUPPORTED_RNNS
 
 
-class DeepSpeechModelCE(BaseModel):
+class DeepSpeechModelCE4PB(BaseModel):
     """ a sample implementation of CTC model """
     default_config = {
         "conv_filters": 128,
@@ -45,7 +45,8 @@ class DeepSpeechModelCE(BaseModel):
         layers = tf.keras.layers
         input_feature = layers.Input(
             shape=data_descriptions.sample_shape["input"],
-            dtype=tf.float32
+            dtype=tf.float32,
+            name='input_feature'
         )
         inner = layers.Conv2D(
             filters=self.hparams.conv_filters,
@@ -64,29 +65,54 @@ class DeepSpeechModelCE(BaseModel):
             padding="same",
             use_bias=False,
             data_format="channels_last",
-        )(inner)
+        )(inner)[:,1:-1,:,:]
         inner = layers.BatchNormalization()(inner)
         inner = tf.nn.relu6(inner)
         _, _, dim, channels = inner.get_shape().as_list()
         output_dim = dim * channels
         inner = layers.Reshape((-1, output_dim))(inner)
+
+        self.enc = tf.keras.Model(inputs=input_feature,
+                                  outputs=inner)
+        logging.info(self.enc.summary())
+
         rnn_type = self.hparams.rnn_type
         rnn_hidden_size = self.hparams.rnn_hidden_size
 
-        for _ in range(self.hparams.num_rnn_layers):
-            inner = tf.keras.layers.RNN(
+        self.inputs = []
+        self.inputs.append(input_feature)
+        self.outputs = []
+
+        for i in range(self.hparams.num_rnn_layers):
+            initial = tf.keras.layers.Input(
+                shape=(512,),
+                dtype=tf.float32,
+                name="initial_" + str(i))
+            self.inputs.append(initial)
+            inner, last_state = tf.keras.layers.RNN(
                 cell=[SUPPORTED_RNNS[rnn_type](rnn_hidden_size)],
-                return_sequences=True
-            )(inner)
+                return_sequences=True,
+                return_state=True
+            )(inputs=inner, initial_state=[initial])
+            state = tf.identity(last_state[0], name="state_" + str(i))
+            self.outputs.append(state)
             inner = layers.BatchNormalization()(inner)
         inner = layers.Dense(rnn_hidden_size, activation=tf.nn.relu6)(inner)
         inner = layers.Dense(self.num_classes)(inner)
-        self.net = tf.keras.Model(inputs=input_feature, outputs=inner)
+
+        inner = tf.nn.log_softmax(inner)
+        logits = tf.identity(inner, name="logits")
+        self.outputs.append(logits)
+
+        # self.net = tf.keras.Model(inputs=input_feature, outputs=inner)
+        self.net = tf.keras.Model(inputs=self.inputs,
+                                  outputs=self.outputs)
         logging.info(self.net.summary())
 
     def call(self, samples, training=None):
         """ call function """
-        return self.net(samples["input"], training=training)
+        # return self.net(samples["input"], training=training)
+        self.enc(samples, training=training)
 
     def compute_logit_length(self, samples):
         """ used for get logit length """

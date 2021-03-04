@@ -36,13 +36,14 @@ class SpeechRecognitionDatasetKaldiIOBuilder(SpeechRecognitionDatasetBuilder):
         "output_length_range": [1, 10000],
         "speed_permutation": [1.0],
         "data_csv": None,
-        "data_scps_dir": None
+        "data_scps_dir": None,
+        "sort_and_filter": False
     }
 
     def __init__(self, config=None):
         super().__init__(config=config)
         if self.hparams.data_scps_dir is not None:
-            self.preprocess_data(self.hparams.data_scps_dir)
+            self.preprocess_data(self.hparams.data_scps_dir, apply_sort_filter=self.hparams.sort_and_filter)
 
     def preprocess_data(self, file_dir, apply_sort_filter=False):
         """ Generate a list of tuples (feat_key, speaker). """
